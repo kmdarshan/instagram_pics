@@ -280,6 +280,7 @@
 				B0DA88EC1606983800F0273A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
