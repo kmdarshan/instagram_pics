@@ -416,17 +416,34 @@ UIView *tmpClickView;
         cell.textLabel.text = @"";
         if([jsonHighresstring count] > 0)
         {
+            
             // this is the view retrieved from cicking on a thumbnail
             UIView *headerView = tmpClickView;
             NSLog(@"tag %d %d cell", headerView.tag, indexPath.row);
+            UIActivityIndicatorView *jsondataDownloadIndicator2 = [[UIActivityIndicatorView alloc]initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
             
-            // load the images in main view
-            UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[jsonHighresstring objectAtIndex:headerView.tag]]]];
-            // image size 150, 150
-            CGRect rect = CGRectMake(0, cell.frame.origin.y , cell.frame.size.width, cell.frame.size.height);
-            UIImageView * imageView = [[UIImageView alloc] initWithFrame:rect];
-            [imageView setImage:image];
-            [cell addSubview:imageView];
+            jsondataDownloadIndicator2.frame = CGRectMake(100.0, 200.0, 40.0, 40.0);
+            //jsondataDownloadIndicator2.center = self.view.center;
+            [cell addSubview: jsondataDownloadIndicator2];
+            [jsondataDownloadIndicator2 startAnimating];
+
+            __block UIImageView * imageView;
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                //[self loadThumbnails_];
+                // load the images in main view
+                UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[jsonHighresstring objectAtIndex:headerView.tag]]]];
+                
+                dispatch_sync(dispatch_get_main_queue(), ^{
+                    // image size 150, 150
+                    CGRect rect = CGRectMake(0, cell.frame.origin.y , cell.frame.size.width, cell.frame.size.height);
+                    imageView = [[UIImageView alloc] initWithFrame:rect];
+                    [imageView setImage:image];
+                    [cell addSubview:imageView];
+                    [jsondataDownloadIndicator2 stopAnimating];
+                });
+                
+            });
+            
         }
     }
     /*
