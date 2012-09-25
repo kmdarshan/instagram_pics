@@ -23,53 +23,30 @@
 @synthesize downloadedimages;
 @synthesize jsonHighresstring;
 
-- (void)viewDidLoad
+-(void) handleRefresh: (UIRefreshControl*)refreshcontrol
 {
+    NSLog(@"inside refresh");
+    [jsonthumbnailsstring removeAllObjects];
+    [jsonHighresstring removeAllObjects];
+    [jsondata resetBytesInRange:NSMakeRange(0, [jsondata length])];
+    mPositionX=0;
+    [self loadMainJsonStrings];
+}
 
-    [super viewDidLoad];
-    // global cnt of views inside the scroll view is thousand
-    
-    gCnt = 100;
-    mPositionX = 0;
-    
-    
-     
-    downloadedimages = [NSMutableArray alloc];
-    
-    //tbview = [[UITableView alloc] initWithFrame:self.view.bounds];
-    [tbview setDelegate:self];
-    [tbview setDataSource:self];
-    [self.view addSubview:tbview];
-    /*
-    CGRect rect = CGRectMake(0.0f, 40.0f, 150, 150);
-    imgv1 = [[UIImageView alloc] initWithFrame:rect];
-    [imgv1 setImage:img1];
-    [self.view addSubview:imgv1];
-    
-    rect = CGRectMake(0.0f, 120.0f, 150, 150);
-    imgv2 = [[UIImageView alloc] initWithFrame:rect];
-    [imgv2 setImage:img2];
-    [self.view addSubview:imgv2];
-    
-    rect = CGRectMake(0.0f, 180.0f, 150, 150);
-    imgv3 = [[UIImageView alloc] initWithFrame:rect];
-    [imgv3 setImage:img3];
-    [self.view addSubview:imgv3];
-     */
-    
-	// Do any additional setup after loading the view, typically from a nib.
-    // Release any retained subviews of the main view.
-    jsonthumbnailsstring = [[NSMutableArray alloc] initWithCapacity:1];
-    jsonHighresstring = [[NSMutableArray alloc] initWithCapacity:1];
-    
+- (NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse {
+    return nil;
+}
+
+-(void) loadMainJsonStrings
+{
     // get the json string in a nsstring first
     NSString *_jsonstring =
     @"https://api.instagram.com/v1/media/popular?access_token=236077.f59def8.357c3c9d5d8645218fc8b0a255df7ee0&next_url=1";
     NSURLRequest *theRequest=[NSURLRequest requestWithURL:[NSURL URLWithString:_jsonstring]
-                                              cachePolicy:NSURLRequestUseProtocolCachePolicy
-                                          timeoutInterval:60.0];
-   
-   
+                                            cachePolicy:NSURLRequestUseProtocolCachePolicy
+                                            timeoutInterval:0.0];
+    
+    
     //jsondataDownloadIndicator = [[UIActivityIndicatorView alloc]initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     
 	//jsondataDownloadIndicator.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
@@ -114,17 +91,59 @@
             parentScrollview.pagingEnabled = TRUE;
             posX = posX + 100;
             //[parentScrollview addSubview:jsondataDownloadIndicator];
-             
+            
         }
         
         parentScrollview.contentSize = CGSizeMake(parentScrollview.frame.size.width * gCnt, parentScrollview.frame.size.height);
-
+        
     } else {
         // Inform the user that the connection failed.
         NSLog(@"connection failed");
         [jsondataDownloadIndicator stopAnimating];
     }
+}
+- (void)viewDidLoad
+{
+
+    [super viewDidLoad];
+    // global cnt of views inside the scroll view is thousand
     
+    gCnt = 100;
+    mPositionX = 0;
+    
+    
+    refreshControl = [[UIRefreshControl alloc] init];
+    [refreshControl addTarget:self action:@selector(handleRefresh:) forControlEvents:UIControlEventValueChanged];
+    [self.tbview addSubview:refreshControl];
+     
+    downloadedimages = [NSMutableArray alloc];
+    
+    //tbview = [[UITableView alloc] initWithFrame:self.view.bounds];
+    [tbview setDelegate:self];
+    [tbview setDataSource:self];
+    [self.view addSubview:tbview];
+    /*
+    CGRect rect = CGRectMake(0.0f, 40.0f, 150, 150);
+    imgv1 = [[UIImageView alloc] initWithFrame:rect];
+    [imgv1 setImage:img1];
+    [self.view addSubview:imgv1];
+    
+    rect = CGRectMake(0.0f, 120.0f, 150, 150);
+    imgv2 = [[UIImageView alloc] initWithFrame:rect];
+    [imgv2 setImage:img2];
+    [self.view addSubview:imgv2];
+    
+    rect = CGRectMake(0.0f, 180.0f, 150, 150);
+    imgv3 = [[UIImageView alloc] initWithFrame:rect];
+    [imgv3 setImage:img3];
+    [self.view addSubview:imgv3];
+     */
+    
+	// Do any additional setup after loading the view, typically from a nib.
+    // Release any retained subviews of the main view.
+    jsonthumbnailsstring = [[NSMutableArray alloc] initWithCapacity:1];
+    jsonHighresstring = [[NSMutableArray alloc] initWithCapacity:1];
+    [self loadMainJsonStrings];
 }
 
 int ghighResUrl=0;
@@ -219,7 +238,7 @@ UIView *tmpClickView;
     [thumbnailViews addObject:subview];
     [jsondataDownloadIndicator stopAnimating];
     [parentScrollview addSubview:subview];
-    parentScrollview.pagingEnabled = TRUE;
+    parentScrollview.pagingEnabled = FALSE;
     mPositionX = mPositionX + 100;
 
 }
@@ -439,6 +458,8 @@ UIView *tmpClickView;
                     imageView = [[UIImageView alloc] initWithFrame:rect];
                     [imageView setImage:image];
                     [cell addSubview:imageView];
+                    
+                    [refreshControl endRefreshing];
                     [jsondataDownloadIndicator2 stopAnimating];
                 });
                 
@@ -480,4 +501,5 @@ UIView *tmpClickView;
 	//UIAlertView *alert = [[UIAlertView alloc] initWithTitle:alertString message:@"" delegate:self cancelButtonTitle:@"Done" otherButtonTitles:nil];
 	//[alert show];
 }
+
 @end

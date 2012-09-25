@@ -33,6 +33,7 @@
     IBOutlet UIView *displayPics;
     NSInteger mPositionX;
     NSMutableArray *thumbnailViews;
+    UIRefreshControl *refreshControl;
 }
 
 @property (nonatomic, retain) NSMutableArray *jsonHighresstring;
