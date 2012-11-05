@@ -22,6 +22,7 @@
 @synthesize tbview;
 @synthesize downloadedimages;
 @synthesize jsonHighresstring;
+@synthesize thumbnailViews;
 
 -(void) handleRefresh: (UIRefreshControl*)refreshcontrol
 {
@@ -41,7 +42,8 @@
 {
     // get the json string in a nsstring first
     NSString *_jsonstring =
-    @"https://api.instagram.com/v1/media/popular?access_token=236077.f59def8.357c3c9d5d8645218fc8b0a255df7ee0&next_url=1";
+    // replace instagram token
+    @"";
     NSURLRequest *theRequest=[NSURLRequest requestWithURL:[NSURL URLWithString:_jsonstring]
                                             cachePolicy:NSURLRequestUseProtocolCachePolicy
                                             timeoutInterval:0.0];
@@ -72,6 +74,7 @@
             frame.origin.x = posX;
             frame.origin.y = 0;
             frame.size = parentScrollview.frame.size;
+            
             
             UIView *subview = [[UIView alloc] initWithFrame:frame];
             if(colorCnt > 2)
@@ -151,8 +154,8 @@ UIView *tmpClickView;
 -(void) loadHighResolutionImage:(UITapGestureRecognizer *)recognizer
 {
     UIView *headerView = recognizer.view;
-    [self.view addSubview:jsondataDownloadIndicator];
-    [jsondataDownloadIndicator startAnimating];
+    //[self.view addSubview:jsondataDownloadIndicator];
+    //[jsondataDownloadIndicator startAnimating];
     NSLog(@"tag %d", headerView.tag);
     
     /*
@@ -172,7 +175,7 @@ UIView *tmpClickView;
             [imageView setImage:image];
             [self.view addSubview:imageView];
     //[self.view addSubview:button];
-    [jsondataDownloadIndicator stopAnimating];
+    //[jsondataDownloadIndicator stopAnimating];
     
 }
 
@@ -190,6 +193,9 @@ UIView *tmpClickView;
     //[self.tbview reloadRowsAtIndexPaths:indexPaths withRowAnimation: UITableViewRowAnimationFade];
     [self.tbview reloadData];
     return;
+    
+    
+    
     [self.view addSubview:jsondataDownloadIndicator];
     [jsondataDownloadIndicator startAnimating];
     
@@ -220,6 +226,8 @@ UIView *tmpClickView;
     frame.origin.x = mPositionX;
     frame.origin.y = 0;
     frame.size = parentScrollview.frame.size;
+    //frame.size.height = 100;
+    //frame.size.width = 50;
     NSLog(@"cntr - > %d", cntr);
     UIView *subview = [[UIView alloc] initWithFrame:frame];
     subview.tag = cntr;
@@ -398,7 +406,7 @@ UIView *tmpClickView;
     return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
 }
 
-#pragma mark Table view methods
+#pragma Table view methods
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -439,10 +447,22 @@ UIView *tmpClickView;
             // this is the view retrieved from cicking on a thumbnail
             UIView *headerView = tmpClickView;
             NSLog(@"tag %d %d cell", headerView.tag, indexPath.row);
-            UIActivityIndicatorView *jsondataDownloadIndicator2 = [[UIActivityIndicatorView alloc]initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+            UIActivityIndicatorView *jsondataDownloadIndicator2 = [[UIActivityIndicatorView alloc]initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
             
-            jsondataDownloadIndicator2.frame = CGRectMake(100.0, 200.0, 40.0, 40.0);
-            //jsondataDownloadIndicator2.center = self.view.center;
+            //jsondataDownloadIndicator2.frame = CGRectMake(0.0, 0.0, 320.0, 480.0);
+            
+            // add uiview for displaying background for status bar
+            UIView *bview = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0,320.0,480.0)];
+            //CALayer *myLayer = bview.layer;
+            //myLayer.backgroundColor = [UIColor blackColor].CGColor;
+            //myLayer.cornerRadius = 20.0;
+            bview.backgroundColor = [UIColor lightGrayColor];
+            bview.alpha = 0.8;
+            
+            //jsondataDownloadIndicator2.backgroundColor = [UIColor lightGrayColor];
+            //jsondataDownloadIndicator2.alpha = 0.9;
+            jsondataDownloadIndicator2.center = bview.center;
+            [cell addSubview:bview];
             [cell addSubview: jsondataDownloadIndicator2];
             [jsondataDownloadIndicator2 startAnimating];
 
@@ -453,11 +473,30 @@ UIView *tmpClickView;
                 UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[jsonHighresstring objectAtIndex:headerView.tag]]]];
                 
                 dispatch_sync(dispatch_get_main_queue(), ^{
+                    
                     // image size 150, 150
                     CGRect rect = CGRectMake(0, cell.frame.origin.y , cell.frame.size.width, cell.frame.size.height);
                     imageView = [[UIImageView alloc] initWithFrame:rect];
                     [imageView setImage:image];
-                    [cell addSubview:imageView];
+                    
+                    
+                    // adding a layer
+                    CALayer *imageLayer = [CALayer layer];
+                    //imageLayer.frame = imageView.bounds;
+                    CGRect rect2 = CGRectMake(0+10, cell.frame.origin.y+10 , cell.frame.size.width-30, cell.frame.size.height-60);
+                    imageLayer.frame = rect2;
+                    imageLayer.cornerRadius = 25.0;
+                    imageLayer.shadowRadius = 5.0;
+                    imageLayer.shadowColor = [UIColor blackColor].CGColor;
+                    //imageLayer.shadowOpacity = 0.8;
+                    imageLayer.shadowOffset = CGSizeMake(0, 3);
+                    //imageLayer.contents = (id) [UIImage imageNamed:@"est.jpeg"].CGImage;
+                    imageLayer.contents = (id) image.CGImage;
+                    imageLayer.masksToBounds = YES;
+                    //[imageView.layer addSublayer:imageLayer];
+                    //[sublayer addSublayer:imageLayer];
+                    cell.layer.backgroundColor = [UIColor blackColor].CGColor;
+                    [cell.layer addSublayer:imageLayer];
                     
                     [refreshControl endRefreshing];
                     [jsondataDownloadIndicator2 stopAnimating];
